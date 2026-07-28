@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 DermaSafe AI | Easy Skincare Safety & Ingredient Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #0f172a;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Glowing Orbs */
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.18;
+        }
+
+        .orb-1 {
+            top: -100px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #10b981 0%, rgba(16, 185, 129, 0) 70%);
+        }
+
+        .orb-2 {
+            bottom: -150px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #06b6d4 0%, rgba(6, 182, 212, 0) 70%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header Navigation */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0 3rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            max-width: 850px;
+            margin: 2rem auto 5rem auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #059669;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
+            color: #0f172a;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-app {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-app:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-app-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #0f172a;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-app-nav:hover {
+            background: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        /* Section Title Header */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            font-size: 1rem;
+            color: #64748b;
+        }
+
+        /* Glass Feature Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 5rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -10px rgba(16, 185, 129, 0.12);
+        }
+
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .glass-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.6rem;
+        }
+
+        .glass-card p {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2.5rem 0;
+            color: #64748b;
+            font-size: 0.88rem;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                🌿 <span>DermaSafe AI</span>
+            </div>
+            <a href="/app" class="btn-app-nav">Open App &rarr;</a>
+        </header>
+
+        <section class="hero">
+            <div class="hero-badge">
+                Cosmetic Safety Made Simple
+            </div>
+            <h1>Know what's in your skincare <span>before it touches your face.</span></h1>
+            <p>Instantly analyze ingredient safety, receive personalized safety scores, build personalized routines, and access your AI skin assistant anytime.</p>
+            <a href="/app" class="btn-app">Try Free Safety Scan 🚀</a>
+        </section>
+
+        <section>
+            <div class="section-header">
+                <h2>Everything You Need for Healthy Skin</h2>
+                <p>Powerful AI tools simplified so anyone can make safe skincare choices.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="glass-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Photo Label Scanner</h3>
+                    <p>Simply snap a picture of any bottle or box label. Our scanner automatically reads every ingredient so you don't have to type a thing.</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="feature-icon">💊</div>
+                    <h3>Prescription Guardrails</h3>
+                    <p>Prevents severe skin irritation by warning you if skincare products react badly with your medications like Tretinoin, Accutane, or antibiotics.</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>5-Star Safety Scores</h3>
+                    <p>Get clear scores for pore-clogging risk, skin barrier safety, sun sensitivity, and allergy alerts before you buy new products.</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>Smart Routine Builder</h3>
+                    <p>Builds balanced Morning and Night skincare routines that make sure your products work well together without causing redness.</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>24/7 Skin Assistant</h3>
+                    <p>Ask our friendly AI assistant any question in plain English—from "In what order do I apply these?" to "Is this safe for sensitive skin?"</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>Easy Risk Alerts</h3>
+                    <p>Highlights dangerous ingredient combinations in plain language with clear red, yellow, or green safety warnings.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 DermaSafe AI. Cosmetic Safety Made Simple.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
