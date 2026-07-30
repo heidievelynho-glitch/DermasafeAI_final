@@ -476,7 +476,6 @@
 
         <div class="tabs-header">
             <button class="tab-btn active" onclick="switchTab('tab1', this)">🧪 Safety Analysis</button>
-            <button class="tab-btn" onclick="switchTab('tab-overview', this)">🔍 Product Overview</button>
             <button class="tab-btn" onclick="switchTab('tab2', this)">⚖️ Ingredient Comparison</button>
             <button class="tab-btn" onclick="switchTab('tab3', this)">📅 Routine Builder</button>
             <button class="tab-btn" onclick="switchTab('tab4', this)">💬 AI Chatbot</button>
@@ -492,7 +491,6 @@
                     <label>Input Mode:</label>
                     <select id="input-mode" onchange="toggleInputMode()">
                         <option value="search">Search Product by Name</option>
-                        <option value="upload">Upload Photo</option>
                         <option value="manual">Paste Ingredients List Manually</option>
                     </select>
 
@@ -501,10 +499,6 @@
                         <button onclick="searchProduct()">Search Product Ingredients</button>
                     </div>
 
-                    <div id="mode-upload" class="hidden">
-                        <input type="file" id="image-file" accept="image/*">
-                        <button onclick="uploadVision()">Run Vision Parsing Extraction</button>
-                    </div>
 
                     <div id="mode-manual" class="hidden">
                         <textarea id="ingredients-text" rows="5" placeholder="Water, Retinol, Salicylic Acid, Fragrance..."></textarea>
@@ -882,11 +876,10 @@
 
         // Toggle Input Modes
         function toggleInputMode() {
-            const mode = document.getElementById("input-mode").value;
-            document.getElementById("mode-search").classList.toggle("hidden", mode !== "search");
-            document.getElementById("mode-upload").classList.toggle("hidden", mode !== "upload");
-            document.getElementById("mode-manual").classList.toggle("hidden", mode !== "manual");
-        }
+    const mode = document.getElementById("input-mode").value;
+    document.getElementById("mode-search").classList.toggle("hidden", mode !== "search");
+    document.getElementById("mode-manual").classList.toggle("hidden", mode !== "manual");
+}
 
         // Search Product API
         async function searchProduct() {

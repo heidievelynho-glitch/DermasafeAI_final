@@ -45,6 +45,21 @@ def get_gemini_client():
     
     # Initialize directly with the key
     return genai.Client(api_key=api_key)
+
+
+def gemini_generate_with_retry(client, model, contents, retries=3, base_delay=2):
+    last_error = None
+    for attempt in range(retries):
+        try:
+            return client.models.generate_content(model=model, contents=contents)
+        except Exception as e:
+            last_error = e
+            if "503" in str(e) or "UNAVAILABLE" in str(e):
+                if attempt < retries - 1:
+                    time.sleep(base_delay * (2 ** attempt))
+                    continue
+            raise
+    raise last_error
 # =========================================================================
 # EMBEDDED BIOCHEMICAL CLINICAL INTERACTION DATASET
 # =========================================================================
@@ -329,13 +344,15 @@ async def vision_extract(file: UploadFile = File(...)):
         client = get_gemini_client()
         prompt = "Extract all ingredient text from this image. Output ONLY a comma-separated list of ingredients cleanly so they can be processed."
         
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=[image, prompt]
+        response = gemini_generate_with_retry(
+            client, model='gemini-3.5-flash', contents=[image, prompt]
         )
         return {"ingredients": response.text.strip()}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        detail = str(e)
+        if "503" in detail or "UNAVAILABLE" in detail:
+            raise HTTPException(status_code=503, detail="The AI model is currently overloaded. Please try again in a moment.")
+        raise HTTPException(status_code=500, detail=detail)
 
 # 2. Product Overview Vision Endpoint (Powered by Gemini)
 @app.post("/api/product-overview-vision")
@@ -354,13 +371,15 @@ async def product_overview_vision(file: UploadFile = File(...)):
             "Format in clean Markdown bullet points."
         )
         
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=[image, prompt]
+        response = gemini_generate_with_retry(
+            client, model='gemini-3.5-flash', contents=[image, prompt]
         )
         return {"overview": response.text.strip()}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        detail = str(e)
+        if "503" in detail or "UNAVAILABLE" in detail:
+            raise HTTPException(status_code=503, detail="The AI model is currently overloaded. Please try again in a moment.")
+        raise HTTPException(status_code=500, detail=detail)
 
 # 3. Safety Analysis Engine Endpoint
 @app.post("/api/analyze-safety")
@@ -559,15 +578,9 @@ def chat(req: ChatRequest):
 
 # Helper to launch browser safely after server starts
 def open_browser():
-    if os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production":
-        return
     time.sleep(1.2)
     webbrowser.open("http://127.0.0.1:8000")
 
 if __name__ == "__main__":
-    if os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production":
-        port = int(os.getenv("PORT", "8000"))
-        uvicorn.run(app, host="0.0.0.0", port=port)
-    else:
-        threading.Thread(target=open_browser, daemon=True).start()
-        uvicorn.run(app, host="127.0.0.1", port=8000)
+    threading.Thread(target=open_browser, daemon=True).start()
+    uvicorn.run(app, host="127.0.0.1", port=8000)
