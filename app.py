@@ -389,8 +389,8 @@ def analyze_safety(req: SafetyAnalysisRequest):
 
     # 1. Ingredient Synergy Conflict
     for rule in INGREDIENT_MUTUAL_CONFLICTS:
-        matched_a = [item.upper() for item in rule["a"] if item in ingredients_lower]
-        matched_b = [item.upper() for item in rule["b"] if item in ingredients_lower]
+        matched_a = [item.upper() for item in rule["a"] if item.lower() in ingredients_lower]
+        matched_b = [item.upper() for item in rule["b"] if item.lower() in ingredients_lower]
         if matched_a and matched_b:
             conflicts.append({
                 "Type": "Ingredient Synergy Conflict",
@@ -404,7 +404,7 @@ def analyze_safety(req: SafetyAnalysisRequest):
     for med in req.medications:
         if med in MEDICATION_CONFLICTS:
             for rule in MEDICATION_CONFLICTS[med]:
-                matched_triggers = [trigger.upper() for trigger in rule["triggers"] if trigger in ingredients_lower]
+                matched_triggers = [trigger.upper() for trigger in rule["triggers"] if trigger.lower() in ingredients_lower]
                 if matched_triggers:
                     conflicts.append({
                         "Type": "Prescription Conflict",
@@ -418,7 +418,7 @@ def analyze_safety(req: SafetyAnalysisRequest):
     for cond in req.conditions:
         if cond in CONDITION_FILTER_RULES:
             rule = CONDITION_FILTER_RULES[cond]
-            matched_triggers = [trigger.upper() for trigger in rule["triggers"] if trigger in ingredients_lower]
+            matched_triggers = [trigger.upper() for trigger in rule["triggers"] if trigger.lower() in ingredients_lower]
             if matched_triggers:
                 conflicts.append({
                     "Type": "Health Strategy Filter",
@@ -430,7 +430,7 @@ def analyze_safety(req: SafetyAnalysisRequest):
 
     # 4. International Regulatory Banned Check
     for ban in INTERNATIONAL_BANNED_INGREDIENTS:
-        matched = [trigger.upper() for trigger in ban["triggers"] if trigger in ingredients_lower]
+        matched = [trigger.upper() for trigger in ban["triggers"] if trigger.lower() in ingredients_lower]
         if matched:
             conflicts.append({
                 "Type": "Global Regulatory Banned",
@@ -442,13 +442,12 @@ def analyze_safety(req: SafetyAnalysisRequest):
 
     # Calculate Safety Score Percentage
     critical_count = len([c for c in conflicts if c["Severity"] == "CRITICAL"])
-    warning_count = len([c for c in conflicts if c["Severity"] in ["HIGH WARNING", "WARNING"]])
+    high_warning_count = len([c for c in conflicts if c["Severity"] == "HIGH WARNING"])
+    warning_count = len([c for c in conflicts if c["Severity"] == "WARNING"])
     
-    s1 = max(0, 100 - (critical_count * 20))
-    s2 = max(0, 100 - (len([c for c in conflicts if c["Type"] == "Prescription Conflict"]) * 30))
-    s3 = max(0, 100 - (len([c for c in conflicts if c["Type"] == "Health Strategy Filter"]) * 25))
-    
-    safety_score = round((s1 + s2 + s3) / 3)
+    # Calculate weighted deductions based on severity counts across all conflict types
+    total_deductions = (critical_count * 35) + (high_warning_count * 25) + (warning_count * 15)
+    safety_score = max(0, 100 - total_deductions)
 
     # Generate AI Product Recommendations if Safety Score < 70%
     recommendations = ""
